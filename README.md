@@ -16,6 +16,8 @@ No sign-up needed. Your data is saved privately in your own browser.
 - **Activity graph.** A GitHub-style grid of the last year. The brighter a square, the more tasks you finished that day. Click a square to open that day.
 - **Personal bests.** Current and longest streak, most tasks in a day, best week, total tasks done, total time, and completion rate. A popup appears when you beat a record.
 - **Week at a glance.** A strip under the header shows Monday to Sunday with each day's progress. Click a day to open it.
+- **Backup.** Export everything to a `.json` file, and import it on another device such as your phone. Imports are checked before anything is replaced.
+- **Install on your phone.** Open the site and choose *Add to Home Screen*. It opens like an app and keeps working offline.
 - **Day navigation.** Use the ‹ › arrows, the date picker or the week strip to move between days, and **Today** to jump back.
 
 A **streak** counts consecutive days where you planned at least one task and finished every task you didn't skip.
@@ -35,6 +37,12 @@ Everything is saved automatically in your browser's `localStorage`. Nothing is u
 | `style.css`             | Liquid glass theme and layout                                        |
 | `app.js`                | Tasks, side quests, priorities, review, graph, personal bests, storage   |
 | `assets/background.jpg` | Background photo (mountains and black-sand beach)                    |
+| `assets/fonts/`         | Inter font files, hosted with the site                               |
+| `assets/icon-*.png`, `assets/apple-touch-icon.png` | App icons for phones and browsers     |
+| `manifest.webmanifest`  | Lets the planner be installed as an app                              |
+| `sw.js`                 | Service worker: offline support                                      |
+| `vercel.json`           | Security headers for hosting on Vercel                               |
+| `.gitignore`            | Keeps `.env` files, the `.vercel` folder and similar out of git      |
 
 ## Running locally
 
@@ -56,6 +64,23 @@ and open **http://localhost:8000** in your browser.
 > Note: the localhost link only works on the computer running the command. To share the planner, use the [live link](https://aditya-7826.github.io/Plan-it-out/) above.
 
 ## Changelog
+
+### v2.4: Secure deployment, backups and phone app (November 2026)
+
+- **Security headers** for Vercel in `vercel.json`:
+  - a strict Content-Security-Policy that only allows the site's own files plus the two time services
+  - HSTS
+  - `nosniff`
+  - no framing
+  - no referrer
+  - a Permissions-Policy that turns off camera, microphone, location and payment
+  - cross-origin isolation headers
+  - `noindex` so search engines don't list the site
+- **Fonts are now hosted with the site** instead of being loaded from Google Fonts, so the page makes no calls to Google.
+- Removed the one inline style the CSP would have blocked (in the week strip), without changing how it looks.
+- **Backup:** a new section to export your data as `plan-it-out-YYYY-MM-DD.json` and import it elsewhere. Imports are limited to 1 MB, must match the planner's data format, and ask for confirmation before replacing anything.
+- **Installable app (PWA):** added an app manifest, icons and a service worker. The planner can be added to a phone's home screen and opens offline. The time check is never cached.
+- Added `.gitignore`. The full git history was scanned for leaked keys and passwords and none were found. GitHub secret scanning and push protection are switched on for the repo.
 
 ### v2.3: Two priorities and side quests (November 2026)
 

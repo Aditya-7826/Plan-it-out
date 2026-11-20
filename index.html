@@ -4,9 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Plan it out</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#1b2630">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Plan it out">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -114,6 +119,17 @@
     <section class="glass card span-2">
       <div class="card-head"><h2><span data-icon="star"></span>Personal bests</h2></div>
       <div id="bests" class="bests"></div>
+    </section>
+
+    <!-- Backup: export / import everything as a JSON file -->
+    <section class="glass card span-2">
+      <div class="card-head"><h2><span data-icon="download"></span>Backup</h2></div>
+      <p class="muted backup-help">Your plans live only in this browser. Export a backup file to keep them safe, or import one to move them to another device, like your phone.</p>
+      <div class="backup-actions">
+        <button id="exportBtn" type="button" class="btn"><span data-icon="download"></span>Export backup</button>
+        <label class="btn btn-ghost"><span data-icon="upload"></span>Import backup<input type="file" id="importFile" accept=".json,application/json" class="visually-hidden"></label>
+      </div>
+      <p id="backupStatus" class="backup-status" role="status" aria-live="polite"></p>
     </section>
   </div>
 </main>

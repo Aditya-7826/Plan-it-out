@@ -22,6 +22,8 @@ const ICONS = {
   copy: '<rect x="8" y="8" width="13" height="13" rx="2.5"/><path d="M4 16V5.5A2.5 2.5 0 0 1 6.5 3H16"/>',
   trash: '<path d="M3 6h18M8 6V4.5A1.5 1.5 0 0 1 9.5 3h5A1.5 1.5 0 0 1 16 4.5V6M5.5 6l1 14a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5l1-14"/><path d="M10 10.5v6M14 10.5v6"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  download: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17"/>',
+  upload: '<path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17"/>',
 };
 
 function icon(name) {
@@ -515,8 +517,19 @@ function renderWeek() {
     if (key === today) b.classList.add("is-today");
     if (key === currentDate) b.classList.add("is-selected");
     b.title = `${niceDate(key)} · ${tasks.length} task${tasks.length === 1 ? "" : "s"}`;
-    b.innerHTML = `<span class="wd">${fromKey(key).toLocaleDateString(undefined, { weekday: "short" })}</span>` +
-      `<span class="dn">${fromKey(key).getDate()}</span><span class="bar"><i style="width:${pct}%"></i></span>`;
+    // built with DOM calls (no style="" attribute) so a strict Content-Security-Policy allows it
+    const wd = document.createElement("span");
+    wd.className = "wd";
+    wd.textContent = fromKey(key).toLocaleDateString(undefined, { weekday: "short" });
+    const dn = document.createElement("span");
+    dn.className = "dn";
+    dn.textContent = fromKey(key).getDate();
+    const bar = document.createElement("span");
+    bar.className = "bar";
+    const fill = document.createElement("i");
+    fill.style.width = `${pct}%`; // CSSOM property, allowed under style-src 'self'
+    bar.append(fill);
+    b.append(wd, dn, bar);
     b.addEventListener("click", () => { currentDate = key; render(); });
     week.append(b);
   }
@@ -588,6 +601,97 @@ $("datePicker").addEventListener("change", (e) => {
 $("prevDay").addEventListener("click", () => { currentDate = shiftDate(currentDate, -1); render(); });
 $("nextDay").addEventListener("click", () => { currentDate = shiftDate(currentDate, 1); render(); });
 $("todayBtn").addEventListener("click", () => { currentDate = todayKey(); render(); });
+
+// ---------- backup: export / import ----------
+const MAX_IMPORT_BYTES = 1024 * 1024; // 1 MB
+const isPlainObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+
+function setBackupStatus(msg, kind) {
+  const el = $("backupStatus");
+  el.textContent = msg; // always textContent, never innerHTML
+  el.className = `backup-status ${kind || ""}`;
+}
+
+$("exportBtn").addEventListener("click", () => {
+  let json;
+  try { json = localStorage.getItem(STORAGE_KEY); } catch {}
+  if (!json) json = JSON.stringify(data); // nothing saved yet: export the in-memory data
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `plan-it-out-${todayKey()}.json`;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  setBackupStatus("Backup downloaded.", "ok");
+});
+
+// Check that a parsed file has the same structure app.js stores under "planItOut.v2".
+function validateBackup(obj) {
+  if (!isPlainObject(obj)) return "The file isn't a Plan it out backup.";
+  const allowed = ["days", "hobbies", "records"];
+  const extra = Object.keys(obj).filter((k) => !allowed.includes(k));
+  if (extra.length) return `Unexpected data in file: ${extra.slice(0, 3).join(", ")}.`;
+  if (!isPlainObject(obj.days)) return "The file has no days section.";
+  if (!Array.isArray(obj.hobbies)) return "The file has no side quests section.";
+  if (obj.records !== undefined && !isPlainObject(obj.records)) return "The personal bests section is damaged.";
+  for (const [key, day] of Object.entries(obj.days)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return `"${key.slice(0, 20)}" isn't a valid date.`;
+    if (!isPlainObject(day) || !Array.isArray(day.tasks)) return `The day ${key} is damaged.`;
+    if (day.notes !== undefined && typeof day.notes !== "string") return `The notes for ${key} are damaged.`;
+    for (const t of day.tasks) {
+      if (!isPlainObject(t) || typeof t.text !== "string" || typeof t.status !== "string") return `A task on ${key} is damaged.`;
+    }
+  }
+  for (const h of obj.hobbies) {
+    if (!isPlainObject(h) || typeof h.name !== "string") return "A side quest in the file is damaged.";
+  }
+  return null;
+}
+
+$("importFile").addEventListener("change", async (e) => {
+  const input = e.target;
+  const file = input.files && input.files[0];
+  input.value = ""; // allow choosing the same file again later
+  if (!file) return;
+  if (file.size > MAX_IMPORT_BYTES) {
+    setBackupStatus("That file is over 1 MB, which is too big to be a Plan it out backup.", "error");
+    return;
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(await file.text());
+  } catch {
+    setBackupStatus("That file couldn't be read. Choose a .json backup exported from Plan it out.", "error");
+    return;
+  }
+  const problem = validateBackup(parsed);
+  if (problem) {
+    setBackupStatus(`Import cancelled: ${problem}`, "error");
+    return;
+  }
+  const days = Object.keys(parsed.days).length;
+  if (!confirm(`Replace everything in this browser with the backup (${days} day${days === 1 ? "" : "s"} of plans, ${parsed.hobbies.length} side quest${parsed.hobbies.length === 1 ? "" : "s"})? This can't be undone.`)) {
+    setBackupStatus("Import cancelled.", "");
+    return;
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+  } catch {
+    setBackupStatus("Couldn't save the backup. Your browser storage may be full or blocked.", "error");
+    return;
+  }
+  location.reload();
+});
+
+// ---------- offline support / install as an app ----------
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
 
 fillIcons();
 render();
