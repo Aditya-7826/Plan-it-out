@@ -1,61 +1,48 @@
-# 🌙 Night Sky Study Planner
+# Plan it out
 
-A simple, personal study planner for tracking daily study goals — wrapped in a calm blue-and-black night sky theme with twinkling stars.
+A personal day planner with a frosted "liquid glass" look. You can plan daily to-dos, keep a list of hobbies, set priorities, review what you did and didn't do, and track your progress on a contribution graph with personal bests. Everything is on one page.
 
-### 🔗 Use it now: **[aditya-7826.github.io/Study-planner](https://aditya-7826.github.io/Study-planner/)**
+### 🔗 Use it now: **[aditya-7826.github.io/Plan-it-out](https://aditya-7826.github.io/Plan-it-out/)**
 
-No sign-up needed. Your goals are saved privately in your own browser.
+No sign-up needed. Your data is saved privately in your own browser.
 
-## What it is for
+## Features
 
-This is a lightweight tool for planning and tracking what you want to study each day. Every day you write down your goals by hand, tick them off as you finish them, and see at a glance how consistent you've been over the past week.
+- **Daily to-do list.** Add tasks for any day, with optional planned minutes and a priority. Tick them off, skip them, duplicate them or delete them.
+- **Priorities.** Every task and hobby is High, Medium or Low. Lists are sorted by priority, with a divider between groups. Click a priority chip to change it.
+- **Hobbies.** Keep a list of hobbies with their own priorities. Press **+** on a hobby to add it to the selected day's plan.
+- **Day review.** See what you finished and what you didn't for any day. On past days, unfinished tasks are marked as missed, and one click moves them to today.
+- **Notes.** Write notes for each day.
+- **Activity graph.** A GitHub-style grid of the last year. The brighter a square, the more tasks you finished that day. Click a square to open that day.
+- **Personal bests.** Current and longest streak, most tasks in a day, best week, total tasks done, total time, and completion rate. A popup appears when you beat a record.
+- **Week at a glance.** A strip under the header shows Monday to Sunday with each day's progress. Click a day to open it.
+- **Day navigation.** Use the ‹ › arrows, the date picker or the week strip to move between days, and **Today** to jump back.
 
-It's built for one person (me), runs entirely in the browser, and needs no account, no server, and no installation.
+A **streak** counts consecutive days where you planned at least one task and finished every task you didn't skip.
 
-## How it works
-
-1. **Open `index.html`** in any modern browser (or visit the GitHub Pages link if enabled).
-2. **Add your goals for the day** — type a goal, optionally add how many minutes you plan to spend on it, and press **Add**.
-3. **Check goals off** as you complete them. The progress bar shows how many goals (and minutes) you've finished.
-4. **Write notes** about the day — what you learned, what was hard, what to revisit.
-5. **Move between days** with the ‹ › arrows or the date picker to review past days or plan ahead. "Jump to today" brings you back.
-6. **Review the last 7 days** in the history row:
-   - dim dot — no goals or none completed
-   - blue dot — some goals completed
-   - glowing dot — every goal completed
-7. **Streak** counts the consecutive days where you completed every goal.
-
-### Where is my data stored?
+## Where is my data stored?
 
 Everything is saved automatically in your browser's `localStorage`. Nothing is uploaded anywhere. This means:
 
 - Your data stays private on your device.
-- It's tied to that browser — clearing site data or switching browsers/devices will start you fresh.
+- It's tied to that browser, so clearing site data or switching browsers or devices starts you fresh.
 
-### Files
+## Files
 
-| File         | Purpose                                         |
-|--------------|-------------------------------------------------|
-| `index.html` | Page structure                                  |
-| `style.css`  | Night sky theme and layout                      |
-| `app.js`     | Goal tracking logic, storage, and star animation |
-
-## What problems it solves
-
-- **Vague study days** — writing goals each morning turns "I should study" into concrete, checkable tasks.
-- **No sense of progress** — the progress bar and minute totals show exactly how much of the plan got done.
-- **Inconsistency** — the 7-day history and streak counter make gaps visible and reward showing up every day.
-- **Overcomplicated tools** — no sign-ups, sync, ads, or feature bloat. Just goals, checkboxes, and notes.
-- **Forgetting what you studied** — daily notes and past days let you look back at what you actually covered.
-- **Boring interfaces** — a calm night-sky look makes it a nicer place to sit down and plan.
+| File                    | Purpose                                                              |
+|-------------------------|----------------------------------------------------------------------|
+| `index.html`            | Page structure                                                       |
+| `style.css`             | Liquid glass theme and layout                                        |
+| `app.js`                | Tasks, hobbies, priorities, review, graph, personal bests, storage   |
+| `assets/background.jpg` | Background photo (mountains and black-sand beach)                    |
 
 ## Running locally
 
-No build step needed. Clone the repo:
+No build step is needed. Clone the repo:
 
 ```bash
-git clone https://github.com/Aditya-7826/Study-planner.git
-cd Study-planner
+git clone https://github.com/Aditya-7826/Plan-it-out.git
+cd Plan-it-out
 ```
 
 Then either double-click `index.html`, or serve it on localhost:
@@ -66,4 +53,34 @@ python -m http.server 8000
 
 and open **http://localhost:8000** in your browser.
 
-> Note: the localhost link only works on the computer running the command. To share the planner, use the [live link](https://aditya-7826.github.io/Study-planner/) above.
+> Note: the localhost link only works on the computer running the command. To share the planner, use the [live link](https://aditya-7826.github.io/Plan-it-out/) above.
+
+## Changelog
+
+### v2.1: Planner look (November 2026)
+
+- Cleaned the background photo. The glass menu (Edit, Duplicate, Favourite, Share, Delete) and the "Liquid Glass" title that were part of the image are completely removed. Only the real mountain and beach scenery remains, joined with a soft blend. The file is now `assets/background.jpg` and is much smaller (about 350 KB instead of 2.6 MB).
+- The **Plan it out** title now uses Inter, the same font as the rest of the page, instead of the separate Chewy display font.
+- Redesigned the header like a planner page: a small "Plan it out" label, the selected date written out in large text (e.g. "Friday, 20 November"), and a one-line summary of tasks left, done or missed.
+- Added a **week strip** under the header. It shows Monday to Sunday of the selected week, with a progress bar under each day. Click a day to open it.
+- Section headings are now small uppercase labels with a divider line, like planner sections.
+- The notes box now has ruled lines, like a notebook page.
+
+### v2: Plan it out (November 2026)
+
+- Renamed the project from **Night Sky Study Planner** to **Plan it out**, and renamed the GitHub repo from `Study-planner` to `Plan-it-out`. The live link moved to `aditya-7826.github.io/Plan-it-out/`.
+- Replaced the night-sky theme and twinkling-star animation with a **liquid glass** design: a full-screen photo background, frosted translucent cards with bright edges, white line icons, menu-style lists with divider lines, and a large rounded title (Chewy and Inter fonts from Google Fonts).
+- Widened the layout to a two-column grid on desktop. It becomes one column on phones.
+- "Study goals" became general **tasks**. Each has a priority (High, Medium or Low) and a status (to do, done or skipped).
+- Added **skip** and **duplicate** actions to tasks.
+- Added a **Hobbies** list with priorities and one-click "add to today's plan".
+- Added a **Day review** panel listing done and not-done tasks, with past unfinished tasks marked as *missed*.
+- Added **Move unfinished to today** for past days.
+- Replaced the "Last 7 days" row with a full-year **activity graph**.
+- Added **Personal bests**: current and longest streak, most tasks in a day, best week, total done, total time, and completion rate, with a popup when a record is broken.
+- Streaks now ignore skipped tasks.
+- Moved storage to a new key (`planItOut.v2`). Goals and notes from the old version are copied over automatically on first load.
+
+### v1: Night Sky Study Planner
+
+- Daily study goals with planned minutes, a progress bar, daily notes, a 7-day history and a streak counter, on a night-sky theme.

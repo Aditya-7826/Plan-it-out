@@ -3,50 +3,124 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Night Sky Study Planner</title>
+<title>Plan it out</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<canvas id="stars"></canvas>
+<div class="backdrop" aria-hidden="true"></div>
 
 <main class="container">
-  <header>
-    <h1>🌙 Study Planner</h1>
-    <div class="date-nav">
-      <button id="prevDay" aria-label="Previous day">‹</button>
-      <input type="date" id="datePicker">
-      <button id="nextDay" aria-label="Next day">›</button>
+  <header class="hero">
+    <div class="hero-text">
+      <p class="eyebrow">Plan it out</p>
+      <h1 id="bigDate">Today</h1>
+      <p id="heroSummary" class="muted"></p>
     </div>
-    <button id="todayBtn" class="link-btn">Jump to today</button>
+    <div class="date-nav glass">
+      <button id="prevDay" class="icon-btn" aria-label="Previous day" data-icon="left"></button>
+      <input type="date" id="datePicker" aria-label="Date">
+      <button id="nextDay" class="icon-btn" aria-label="Next day" data-icon="right"></button>
+      <span class="sep"></span>
+      <button id="todayBtn" class="text-btn">Today</button>
+    </div>
   </header>
 
-  <section class="card">
-    <form id="goalForm">
-      <input type="text" id="goalInput" placeholder="Add a study goal for this day…" autocomplete="off" required>
-      <input type="number" id="minutesInput" placeholder="mins" min="0" step="5" title="Planned minutes (optional)">
-      <button type="submit">Add</button>
-    </form>
+  <!-- week at a glance, like a planner spread -->
+  <nav id="week" class="week glass" aria-label="This week"></nav>
 
-    <div class="progress">
-      <div class="progress-bar"><div id="progressFill"></div></div>
-      <span id="progressText">0 / 0 done</span>
-    </div>
+  <div class="grid">
+    <!-- Daily to-do list -->
+    <section class="glass card span-2" id="tasksCard">
+      <div class="card-head">
+        <h2><span data-icon="list"></span>To-do list</h2>
+        <span id="dayLabel" class="muted"></span>
+      </div>
 
-    <ul id="goalList"></ul>
-    <p id="emptyMsg" class="muted">No goals yet. The sky is clear — add your first one above.</p>
-  </section>
+      <form id="taskForm" class="add-form">
+        <input type="text" id="taskInput" placeholder="Add a task for this day…" autocomplete="off" required>
+        <input type="number" id="minutesInput" placeholder="mins" min="0" step="5" title="Planned minutes (optional)">
+        <select id="taskPriority" title="Priority">
+          <option value="high">High</option>
+          <option value="medium" selected>Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <button type="submit" class="btn">Add</button>
+      </form>
 
-  <section class="card">
-    <h2>Notes for the day</h2>
-    <textarea id="notes" placeholder="What did you learn? What was hard?"></textarea>
-  </section>
+      <div class="progress">
+        <div class="progress-bar"><div id="progressFill"></div></div>
+        <span id="progressText">0 / 0 done</span>
+      </div>
 
-  <section class="card">
-    <h2>Last 7 days</h2>
-    <div id="history" class="history"></div>
-    <p class="muted small">Streak: <strong id="streak">0</strong> day(s) with every goal completed</p>
-  </section>
+      <ul id="taskList" class="menu"></ul>
+      <p id="emptyTasks" class="muted empty">No tasks yet. Add one above, or pull in a hobby.</p>
+      <button id="carryBtn" class="text-btn carry" hidden><span data-icon="forward"></span><span id="carryText">Move unfinished to today</span></button>
+    </section>
+
+    <!-- Hobbies -->
+    <section class="glass card" id="hobbiesCard">
+      <div class="card-head"><h2><span data-icon="heart"></span>Hobbies</h2></div>
+      <form id="hobbyForm" class="add-form">
+        <input type="text" id="hobbyInput" placeholder="Add a hobby…" autocomplete="off" required>
+        <select id="hobbyPriority" title="Priority">
+          <option value="high">High</option>
+          <option value="medium" selected>Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <button type="submit" class="btn">Add</button>
+      </form>
+      <ul id="hobbyList" class="menu"></ul>
+      <p id="emptyHobbies" class="muted empty">List the things you enjoy. Tap + to add one to the day's plan.</p>
+    </section>
+
+    <!-- What you did / didn't do -->
+    <section class="glass card" id="reviewCard">
+      <div class="card-head"><h2><span data-icon="check-circle"></span>Day review</h2></div>
+      <div class="review">
+        <div>
+          <h3>Done <span id="doneCount" class="pill"></span></h3>
+          <ul id="doneList" class="plain"></ul>
+        </div>
+        <div>
+          <h3 id="missedTitle">Not done <span id="missedCount" class="pill"></span></h3>
+          <ul id="missedList" class="plain"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Notes -->
+    <section class="glass card span-2">
+      <div class="card-head"><h2><span data-icon="edit"></span>Notes for the day</h2></div>
+      <textarea id="notes" placeholder="What did you do? What was hard? What's next?"></textarea>
+    </section>
+
+    <!-- Contribution graph -->
+    <section class="glass card span-2">
+      <div class="card-head">
+        <h2><span data-icon="grid"></span>Activity</h2>
+        <span id="yearTotal" class="muted"></span>
+      </div>
+      <div class="graph-wrap">
+        <div id="months" class="months"></div>
+        <div id="graph" class="graph"></div>
+      </div>
+      <div class="legend muted">Less
+        <i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i>
+        More</div>
+    </section>
+
+    <!-- Personal bests -->
+    <section class="glass card span-2">
+      <div class="card-head"><h2><span data-icon="star"></span>Personal bests</h2></div>
+      <div id="bests" class="bests"></div>
+    </section>
+  </div>
 </main>
+
+<div id="toast" class="toast glass" role="status" aria-live="polite"></div>
 
 <script src="app.js"></script>
 </body>
