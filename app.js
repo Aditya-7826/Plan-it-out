@@ -22,6 +22,11 @@ const ICONS = {
   copy: '<rect x="8" y="8" width="13" height="13" rx="2.5"/><path d="M4 16V5.5A2.5 2.5 0 0 1 6.5 3H16"/>',
   trash: '<path d="M3 6h18M8 6V4.5A1.5 1.5 0 0 1 9.5 3h5A1.5 1.5 0 0 1 16 4.5V6M5.5 6l1 14a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5l1-14"/><path d="M10 10.5v6M14 10.5v6"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  cloud: '<path d="M7 18.5h10a4.5 4.5 0 0 0 .6-8.96A6 6 0 0 0 6.1 9.6 4.5 4.5 0 0 0 7 18.5Z"/>',
+  "cloud-off": '<path d="M7 18.5h10a4.5 4.5 0 0 0 .6-8.96A6 6 0 0 0 6.1 9.6 4.5 4.5 0 0 0 7 18.5Z"/><path d="m3 3 18 18"/>',
+  refresh: '<path d="M20 11a8 8 0 0 0-14.6-4.5L4 8"/><path d="M4 3.5V8h4.5"/><path d="M4 13a8 8 0 0 0 14.6 4.5L20 16"/><path d="M20 20.5V16h-4.5"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/>',
+  logout: '<path d="M15 4h3.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H15"/><path d="M10 16l-4-4 4-4M6 12h10"/>',
   download: '<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17"/>',
   upload: '<path d="M12 15V3M7 8l5-5 5 5"/><path d="M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17"/>',
 };
@@ -141,8 +146,18 @@ function load() {
   } catch {}
   return fresh;
 }
+// sync.js subscribes here so every local change is queued for upload
+const saveListeners = [];
 function save() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
+  saveListeners.forEach((fn) => { try { fn(); } catch {} });
+}
+// Replace all data with a synced copy. Doesn't notify saveListeners, so it isn't re-uploaded.
+function replaceData(next) {
+  data = normalizePriorities(next);
+  if (!data.records) data.records = {};
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
+  render();
 }
 function getDay(key) {
   if (!data.days[key]) data.days[key] = { tasks: [], notes: "" };

@@ -1,13 +1,15 @@
 // Plan it out service worker: lets the app open offline and be installed on a phone.
 // Bump CACHE_VERSION whenever the precached files change.
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 const CACHE_NAME = `plan-it-out-${CACHE_VERSION}`;
 
 const PRECACHE = [
   "./",
   "index.html",
   "style.css",
+  "config.js",
   "app.js",
+  "sync.js",
   "manifest.webmanifest",
   "assets/background.jpg",
   "assets/icon-192.png",

@@ -4,7 +4,7 @@ A personal day planner with a frosted "liquid glass" look. You can plan daily to
 
 ### 🔗 Use it now: **[aditya-7826.github.io/Plan-it-out](https://aditya-7826.github.io/Plan-it-out/)**
 
-No sign-up needed. Your data is saved privately in your own browser.
+No sign-up needed. Your data is saved privately in your own browser. Sign in with your email if you want your laptop and phone to share one planner.
 
 ## Features
 
@@ -16,6 +16,7 @@ No sign-up needed. Your data is saved privately in your own browser.
 - **Activity graph.** A GitHub-style grid of the last year. The brighter a square, the more tasks you finished that day. Click a square to open that day.
 - **Personal bests.** Current and longest streak, most tasks in a day, best week, total tasks done, total time, and completion rate. A popup appears when you beat a record.
 - **Week at a glance.** A strip under the header shows Monday to Sunday with each day's progress. Click a day to open it.
+- **Sync across devices.** Sign in with the same email on your laptop and phone and both show the same planner. Changes upload a moment after you make them, and the app keeps working offline and catches up later. If both devices changed while apart, the changes are merged so nothing is lost.
 - **Backup.** Export everything to a `.json` file, and import it on another device such as your phone. Imports are checked before anything is replaced.
 - **Install on your phone.** Open the site and choose *Add to Home Screen*. It opens like an app and keeps working offline.
 - **Day navigation.** Use the ‹ › arrows, the date picker or the week strip to move between days, and **Today** to jump back.
@@ -24,10 +25,10 @@ A **streak** counts consecutive days where you planned at least one task and fin
 
 ## Where is my data stored?
 
-Everything is saved automatically in your browser's `localStorage`. Nothing is uploaded anywhere. The only network request the app makes is a quick check of the current Indian time. This means:
+Everything is always saved first in your browser's `localStorage`, so the app works offline.
 
-- Your data stays private on your device.
-- It's tied to that browser, so clearing site data or switching browsers or devices starts you fresh.
+- **Not signed in:** nothing is uploaded. The only network request is a quick check of the current Indian time. Clearing site data or switching browsers starts you fresh, so use **Export backup** to keep a copy.
+- **Signed in:** your planner is also stored in your own Supabase database, as one row that only your account can read or change. This is enforced by the database's row-level security rules in `supabase/schema.sql`. Your sign-in session is kept in this browser until you sign out.
 
 ## Files
 
@@ -42,7 +43,37 @@ Everything is saved automatically in your browser's `localStorage`. Nothing is u
 | `manifest.webmanifest`  | Lets the planner be installed as an app                              |
 | `sw.js`                 | Service worker: offline support                                      |
 | `vercel.json`           | Security headers for hosting on Vercel                               |
+| `config.js`             | Your Supabase project address and public key (empty = no sync)       |
+| `sync.js`               | Sign-in and syncing with Supabase                                    |
+| `supabase/schema.sql`   | Database table and security rules to paste into Supabase             |
 | `.gitignore`            | Keeps `.env` files, the `.vercel` folder and similar out of git      |
+
+## Setting up sync (one time, free)
+
+Sync uses [Supabase](https://supabase.com)'s free plan. Until you do these steps, the app works on each device separately.
+
+1. **Create a project.** Sign up at supabase.com, then click **New project**. Pick any name, a strong database password (save it somewhere) and the region closest to you, e.g. Mumbai.
+2. **Create the table.** Open **SQL Editor → New query**, paste the whole of [`supabase/schema.sql`](supabase/schema.sql), and click **Run**. It should say *Success. No rows returned*.
+3. **Set the sign-in addresses.** Open **Authentication → URL Configuration**:
+   - **Site URL:** your live address, e.g. `https://your-app.vercel.app`
+   - **Redirect URLs:** add your live address, plus `http://localhost:8765` if you also run it locally
+4. **Show the code in the sign-in email.** Open **Authentication → Emails → Templates**. In both the **Magic Link** and **Confirm signup** templates, add this line:
+   ```html
+   <p>Or type this code in Plan it out: <strong>{{ .Token }}</strong></p>
+   ```
+   On a phone, the installed app and the browser keep separate storage, so typing the code *inside the installed app* is the reliable way to sign in there.
+5. **Copy your keys into `config.js`.** In **Project Settings → API Keys** (and **Data API** for the URL), copy:
+   - the **Project URL** into `supabaseUrl`
+   - the **publishable / anon public** key into `supabaseAnonKey`
+
+   Both are meant to be public, so it's fine to commit them. **Never** use the `service_role` / secret key, which bypasses all the security rules.
+6. **Deploy, then sign in on each device:** first your laptop, then your phone, with the same email.
+
+**Optional hardening:**
+- In `vercel.json`, replace `https://*.supabase.co` in `connect-src` with your exact project URL.
+- In **Authentication → Rate Limits**, keep the email limits low.
+
+Supabase's built-in email sender only allows a few sign-in emails per hour. That's fine for one person, since you only sign in once per device.
 
 ## Running locally
 
@@ -64,6 +95,22 @@ and open **http://localhost:8000** in your browser.
 > Note: the localhost link only works on the computer running the command. To share the planner, use the [live link](https://aditya-7826.github.io/Plan-it-out/) above.
 
 ## Changelog
+
+### v2.5: Sync between laptop and phone (November 2026)
+
+- **Accounts and sync with Supabase.** Sign in with your email, using the link or a 6-digit code, with no password. All your devices share one planner.
+- **Offline first.** Changes are always saved on the device first, then uploaded about 1.5 s later. The app also syncs when you come back to it and every minute while it's open. A status button in the header shows *Synced*, *Syncing…*, *Not synced yet*, *Offline* or *Sync problem*.
+- **No lost changes.** Every save carries a version number. If two devices save at the same time, the second one notices, pulls the other's changes, merges them and saves again. Merging keeps tasks and side quests from both sides and joins notes that differ. Something deleted on one device while the other was editing offline may come back.
+- **Security:**
+  - Each account can only read and write its own row (Postgres row-level security).
+  - Signed-out visitors have no database access.
+  - The data must be a JSON object under 1 MB.
+  - Downloaded data is checked with the same rules as backup imports before it's used.
+  - Sign-in tokens are removed from the address bar immediately.
+  - No library is added: it uses plain `fetch` under the existing strict Content-Security-Policy, which now also allows `*.supabase.co`.
+- New files: `config.js`, `sync.js`, `supabase/schema.sql`. The service worker cache was bumped to `v2` to include them.
+- Fixed: buttons and forms with the `hidden` attribute could still show. For example, "Move 0 unfinished tasks to today" appeared on today's card.
+- The email box stretches like the other inputs, and the Backup text no longer says plans live only in this browser.
 
 ### v2.4: Secure deployment, backups and phone app (November 2026)
 

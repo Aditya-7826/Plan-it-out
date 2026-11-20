@@ -30,6 +30,8 @@
       <button id="nextDay" class="icon-btn" aria-label="Next day" data-icon="right"></button>
       <span class="sep"></span>
       <button id="todayBtn" class="text-btn">Today</button>
+      <span class="sep sync-only" hidden></span>
+      <button id="syncPill" class="text-btn sync-pill sync-only" type="button" title="Sync status" hidden><span id="syncPillIcon"></span><span id="syncPillText">Sync</span></button>
     </div>
   </header>
 
@@ -121,10 +123,41 @@
       <div id="bests" class="bests"></div>
     </section>
 
+    <!-- Sync across devices (Supabase account) -->
+    <section class="glass card span-2" id="syncCard">
+      <div class="card-head"><h2><span data-icon="cloud"></span>Sync across devices</h2></div>
+
+      <p id="syncNotConfigured" class="muted sync-help">Sync isn't set up yet. Add your Supabase project details to <code>config.js</code> (see the README), and then sign in here on your laptop and phone to share one planner.</p>
+
+      <div id="syncSignedOut" hidden>
+        <p class="muted sync-help">Sign in with the same email on your laptop and phone, and your plans stay in sync. No password needed.</p>
+        <form id="emailForm" class="add-form">
+          <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" required>
+          <button type="submit" class="btn" id="emailBtn">Email me a sign-in link</button>
+        </form>
+        <form id="codeForm" class="add-form" hidden>
+          <input type="text" id="codeInput" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" maxlength="10" placeholder="6-digit code from the email" required>
+          <button type="submit" class="btn">Sign in</button>
+          <button type="button" class="text-btn" id="codeBack">Use a different email</button>
+        </form>
+      </div>
+
+      <div id="syncSignedIn" hidden>
+        <p class="sync-who">Signed in as <strong id="syncEmail"></strong></p>
+        <p id="syncDetail" class="muted sync-help"></p>
+        <div class="backup-actions">
+          <button id="syncNowBtn" type="button" class="btn"><span data-icon="refresh"></span>Sync now</button>
+          <button id="signOutBtn" type="button" class="btn btn-ghost"><span data-icon="logout"></span>Sign out</button>
+        </div>
+      </div>
+
+      <p id="syncStatus" class="backup-status" role="status" aria-live="polite"></p>
+    </section>
+
     <!-- Backup: export / import everything as a JSON file -->
     <section class="glass card span-2">
       <div class="card-head"><h2><span data-icon="download"></span>Backup</h2></div>
-      <p class="muted backup-help">Your plans live only in this browser. Export a backup file to keep them safe, or import one to move them to another device, like your phone.</p>
+      <p class="muted backup-help">Export a backup file to keep a copy of everything safe, or import one to restore it. Works with or without sync.</p>
       <div class="backup-actions">
         <button id="exportBtn" type="button" class="btn"><span data-icon="download"></span>Export backup</button>
         <label class="btn btn-ghost"><span data-icon="upload"></span>Import backup<input type="file" id="importFile" accept=".json,application/json" class="visually-hidden"></label>
@@ -136,6 +169,8 @@
 
 <div id="toast" class="toast glass" role="status" aria-live="polite"></div>
 
+<script src="config.js"></script>
 <script src="app.js"></script>
+<script src="sync.js"></script>
 </body>
 </html>
