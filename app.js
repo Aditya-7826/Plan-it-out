@@ -1,8 +1,8 @@
 // Plan it out — all data lives in your browser's localStorage.
 const STORAGE_KEY = "planItOut.v2";
 const OLD_KEY = "studyPlanner.v1";
-const PRIORITIES = ["high", "medium", "low"];
-const PRIO_RANK = { high: 0, medium: 1, low: 2 };
+const PRIORITIES = ["high", "low"];
+const PRIO_RANK = { high: 0, low: 1 };
 
 const $ = (id) => document.getElementById(id);
 
@@ -11,7 +11,7 @@ const ICONS = {
   left: '<path d="m15 18-6-6 6-6"/>',
   right: '<path d="m9 18 6-6-6-6"/>',
   list: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1 1 2-2M3.5 12l1 1 2-2M3.5 18l1 1 2-2"/>',
-  heart: '<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"/>',
+  compass: '<circle cx="12" cy="12" r="9.5"/><path d="m15.8 8.2-2.1 5.5-5.5 2.1 2.1-5.5Z"/>',
   "check-circle": '<circle cx="12" cy="12" r="9.5"/><path d="m8 12 3 3 5-6"/>',
   edit: '<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/><path d="M13 21h8"/>',
   grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
@@ -47,7 +47,56 @@ function shiftDate(key, days) {
   d.setDate(d.getDate() + days);
   return toKey(d);
 }
-const todayKey = () => toKey(new Date());
+// ---------- clock: always Indian Standard Time ----------
+// "Today" is worked out in Asia/Kolkata, whatever timezone the browser is set to.
+// If the device clock is wrong, syncClock() corrects it using an internet time source.
+const TIME_ZONE = "Asia/Kolkata";
+let clockOffset = 0; // ms to add to the device clock
+const now = () => new Date(Date.now() + clockOffset);
+const istFormat = new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit" });
+const todayKey = () => istFormat.format(now()); // en-CA formats as YYYY-MM-DD
+
+async function fetchWithTimeout(url, opts = {}, ms = 4000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try { return await fetch(url, { ...opts, signal: ctrl.signal, cache: "no-store" }); }
+  finally { clearTimeout(timer); }
+}
+
+async function networkTime() {
+  // 1) when hosted (e.g. GitHub Pages), the server's Date header is the cheapest source
+  if (location.protocol.startsWith("http")) {
+    try {
+      const res = await fetchWithTimeout(location.href, { method: "HEAD" });
+      const d = Date.parse(res.headers.get("date"));
+      if (d) return d;
+    } catch {}
+  }
+  // 2) public time APIs (no data about you is sent)
+  try {
+    const res = await fetchWithTimeout("https://worldtimeapi.org/api/timezone/Asia/Kolkata");
+    const j = await res.json();
+    if (j.unixtime) return j.unixtime * 1000;
+  } catch {}
+  try {
+    const res = await fetchWithTimeout("https://timeapi.io/api/Time/current/zone?timeZone=Asia/Kolkata");
+    const j = await res.json();
+    if (j.dateTime) return Date.parse(j.dateTime + "+05:30");
+  } catch {}
+  return null;
+}
+
+async function syncClock() {
+  const t = await networkTime();
+  if (!t) return;
+  const offset = t - Date.now();
+  // only correct the clock when the device is noticeably off (more than 2 minutes)
+  if (Math.abs(offset) < 2 * 60 * 1000) return;
+  const wasToday = currentDate === todayKey();
+  clockOffset = offset;
+  if (wasToday) currentDate = todayKey();
+  render();
+}
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const niceDate = (key, opts = { weekday: "long", day: "numeric", month: "short" }) =>
   fromKey(key).toLocaleDateString(undefined, opts);
@@ -58,10 +107,18 @@ const niceDate = (key, opts = { weekday: "long", day: "numeric", month: "short" 
 let data = load();
 let currentDate = todayKey();
 
+// priorities are now just high/low: anything else (e.g. the old "medium") becomes low
+function normalizePriorities(d) {
+  const fix = (item) => { if (!PRIORITIES.includes(item.priority)) item.priority = "low"; };
+  Object.values(d.days || {}).forEach((day) => (day.tasks || []).forEach(fix));
+  (d.hobbies || []).forEach(fix);
+  return d;
+}
+
 function load() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved && saved.days) return saved;
+    if (saved && saved.days) return normalizePriorities(saved);
   } catch {}
   // first run: bring over goals from the old Night Sky Study Planner
   const fresh = { days: {}, hobbies: [], records: {} };
@@ -74,7 +131,7 @@ function load() {
           id: g.id || uid(),
           text: g.text,
           minutes: g.minutes || 0,
-          priority: "medium",
+          priority: "low",
           status: g.done ? "done" : "todo",
         })),
       };
@@ -210,7 +267,7 @@ function actionBtn(name, title, onClick, extra = "") {
   return b;
 }
 
-// ---------- render: hobbies ----------
+// ---------- render: side quests (stored as data.hobbies) ----------
 function renderHobbies() {
   const list = $("hobbyList");
   list.innerHTML = "";
@@ -230,14 +287,14 @@ function renderHobbies() {
     const actions = document.createElement("div");
     actions.className = "row-actions";
     actions.append(
-      actionBtn(planned ? "check" : "plus", planned ? "Already in this day's plan" : "Add to this day's plan", () => {
+      actionBtn(planned ? "check" : "plus", planned ? "Side quest already in this day's plan" : "Add side quest to this day's plan", () => {
         if (planned) return;
         getDay(currentDate).tasks.push({
           id: uid(), text: hobby.name, minutes: 0, priority: hobby.priority, status: "todo", hobbyId: hobby.id,
         });
         commit();
       }, planned ? "on" : ""),
-      actionBtn("trash", "Remove hobby", () => {
+      actionBtn("trash", "Remove side quest", () => {
         data.hobbies = data.hobbies.filter((h) => h.id !== hobby.id);
         commit();
       }, "danger"),
@@ -534,3 +591,14 @@ $("todayBtn").addEventListener("click", () => { currentDate = todayKey(); render
 
 fillIcons();
 render();
+syncClock();
+
+// roll over to the new day at midnight IST if the page is left open
+let lastToday = todayKey();
+setInterval(() => {
+  const t = todayKey();
+  if (t === lastToday) return;
+  if (currentDate === lastToday) currentDate = t;
+  lastToday = t;
+  render();
+}, 30 * 1000);

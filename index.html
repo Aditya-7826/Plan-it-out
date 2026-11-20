@@ -44,8 +44,7 @@
         <input type="number" id="minutesInput" placeholder="mins" min="0" step="5" title="Planned minutes (optional)">
         <select id="taskPriority" title="Priority">
           <option value="high">High</option>
-          <option value="medium" selected>Medium</option>
-          <option value="low">Low</option>
+          <option value="low" selected>Low</option>
         </select>
         <button type="submit" class="btn">Add</button>
       </form>
@@ -56,24 +55,23 @@
       </div>
 
       <ul id="taskList" class="menu"></ul>
-      <p id="emptyTasks" class="muted empty">No tasks yet. Add one above, or pull in a hobby.</p>
+      <p id="emptyTasks" class="muted empty">No tasks yet. Add one above, or pull in a side quest.</p>
       <button id="carryBtn" class="text-btn carry" hidden><span data-icon="forward"></span><span id="carryText">Move unfinished to today</span></button>
     </section>
 
-    <!-- Hobbies -->
+    <!-- Side quests (stored as "hobbies") -->
     <section class="glass card" id="hobbiesCard">
-      <div class="card-head"><h2><span data-icon="heart"></span>Hobbies</h2></div>
+      <div class="card-head"><h2><span data-icon="compass"></span>Side quests</h2></div>
       <form id="hobbyForm" class="add-form">
-        <input type="text" id="hobbyInput" placeholder="Add a hobby…" autocomplete="off" required>
+        <input type="text" id="hobbyInput" placeholder="Add a side quest…" autocomplete="off" required>
         <select id="hobbyPriority" title="Priority">
           <option value="high">High</option>
-          <option value="medium" selected>Medium</option>
-          <option value="low">Low</option>
+          <option value="low" selected>Low</option>
         </select>
         <button type="submit" class="btn">Add</button>
       </form>
       <ul id="hobbyList" class="menu"></ul>
-      <p id="emptyHobbies" class="muted empty">List the things you enjoy. Tap + to add one to the day's plan.</p>
+      <p id="emptyHobbies" class="muted empty">Hobbies, little projects, things you want to try. Tap + to add one to the day's plan.</p>
     </section>
 
     <!-- What you did / didn't do -->

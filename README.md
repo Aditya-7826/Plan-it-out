@@ -1,6 +1,6 @@
 # Plan it out
 
-A personal day planner with a frosted "liquid glass" look. You can plan daily to-dos, keep a list of hobbies, set priorities, review what you did and didn't do, and track your progress on a contribution graph with personal bests. Everything is on one page.
+A personal day planner with a frosted "liquid glass" look. You can plan daily to-dos, keep a list of side quests, set high or low priority, review what you did and didn't do, and track your progress on a contribution graph with personal bests. Everything is on one page.
 
 ### 🔗 Use it now: **[aditya-7826.github.io/Plan-it-out](https://aditya-7826.github.io/Plan-it-out/)**
 
@@ -9,8 +9,8 @@ No sign-up needed. Your data is saved privately in your own browser.
 ## Features
 
 - **Daily to-do list.** Add tasks for any day, with optional planned minutes and a priority. Tick them off, skip them, duplicate them or delete them.
-- **Priorities.** Every task and hobby is High, Medium or Low. Lists are sorted by priority, with a divider between groups. Click a priority chip to change it.
-- **Hobbies.** Keep a list of hobbies with their own priorities. Press **+** on a hobby to add it to the selected day's plan.
+- **Priorities.** Every task and side quest is either **High** or **Low** priority. High-priority items are listed first, with a divider before the low-priority ones. Click a priority chip to switch it.
+- **Side quests.** Keep a list of hobbies, little projects and things you want to try, each with its own priority. Press **+** on a side quest to add it to the selected day's plan.
 - **Day review.** See what you finished and what you didn't for any day. On past days, unfinished tasks are marked as missed, and one click moves them to today.
 - **Notes.** Write notes for each day.
 - **Activity graph.** A GitHub-style grid of the last year. The brighter a square, the more tasks you finished that day. Click a square to open that day.
@@ -22,7 +22,7 @@ A **streak** counts consecutive days where you planned at least one task and fin
 
 ## Where is my data stored?
 
-Everything is saved automatically in your browser's `localStorage`. Nothing is uploaded anywhere. This means:
+Everything is saved automatically in your browser's `localStorage`. Nothing is uploaded anywhere. The only network request the app makes is a quick check of the current Indian time. This means:
 
 - Your data stays private on your device.
 - It's tied to that browser, so clearing site data or switching browsers or devices starts you fresh.
@@ -33,7 +33,7 @@ Everything is saved automatically in your browser's `localStorage`. Nothing is u
 |-------------------------|----------------------------------------------------------------------|
 | `index.html`            | Page structure                                                       |
 | `style.css`             | Liquid glass theme and layout                                        |
-| `app.js`                | Tasks, hobbies, priorities, review, graph, personal bests, storage   |
+| `app.js`                | Tasks, side quests, priorities, review, graph, personal bests, storage   |
 | `assets/background.jpg` | Background photo (mountains and black-sand beach)                    |
 
 ## Running locally
@@ -56,6 +56,17 @@ and open **http://localhost:8000** in your browser.
 > Note: the localhost link only works on the computer running the command. To share the planner, use the [live link](https://aditya-7826.github.io/Plan-it-out/) above.
 
 ## Changelog
+
+### v2.3: Two priorities and side quests (November 2026)
+
+- Priorities are now just **High** and **Low** (Medium is gone). New tasks and side quests start as Low. Anything saved as Medium is changed to Low automatically.
+- Renamed the **Hobbies** section to **Side quests**, with a compass icon. Side quests you already added are kept.
+
+### v2.2: Indian time (November 2026)
+
+- "Today" is now always worked out in **Indian Standard Time (Asia/Kolkata)**, whatever timezone or clock setting the browser has.
+- When the page opens, it checks the real time online: the website server's clock, or a public time service if that isn't available. If the device clock is more than 2 minutes off, the app corrects it. Only the time is requested. None of your data is sent.
+- If the page is left open past midnight IST, it moves to the new day automatically.
 
 ### v2.1: Planner look (November 2026)
 
