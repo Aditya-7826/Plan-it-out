@@ -300,7 +300,34 @@ function renderHobbies() {
     label.className = "label";
     label.textContent = hobby.name;
 
-    const planned = day.tasks.some((t) => t.hobbyId === hobby.id);
+    // Ticking a side quest marks it done for the selected day. It's recorded as that day's
+    // linked task, so it counts in progress, the day review, the activity graph and bests.
+    const linked = day.tasks.find((t) => t.hobbyId === hobby.id);
+    const isDone = !!linked && linked.status === "done";
+    if (isDone) li.classList.add("done");
+    const check = document.createElement("button");
+    check.className = "check";
+    check.title = isDone ? "Mark as not done" : "Mark as done for this day";
+    check.setAttribute("aria-label", `${hobby.name}: ${check.title}`);
+    check.innerHTML = isDone ? icon("check") : ""; // static icon markup only
+    check.addEventListener("click", () => {
+      const dayTasks = getDay(currentDate).tasks;
+      const task = dayTasks.find((t) => t.hobbyId === hobby.id);
+      if (!task) {
+        dayTasks.push({
+          id: uid(), text: hobby.name, minutes: 0, priority: hobby.priority, status: "done", hobbyId: hobby.id, fromTick: true,
+        });
+      } else if (task.status === "done") {
+        // un-tick: remove it if the tick created it, otherwise put the planned task back to "to do"
+        if (task.fromTick) getDay(currentDate).tasks = dayTasks.filter((t) => t.id !== task.id);
+        else task.status = "todo";
+      } else {
+        task.status = "done";
+      }
+      commit();
+    });
+
+    const planned = !!linked;
     const actions = document.createElement("div");
     actions.className = "row-actions";
     actions.append(
@@ -317,7 +344,7 @@ function renderHobbies() {
       }, "danger"),
     );
 
-    li.append(label, prioChip(hobby.priority, () => { hobby.priority = nextPriority(hobby.priority); commit(); }), actions);
+    li.append(check, label, prioChip(hobby.priority, () => { hobby.priority = nextPriority(hobby.priority); commit(); }), actions);
     list.append(li);
   }
   $("emptyHobbies").hidden = data.hobbies.length > 0;

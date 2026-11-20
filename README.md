@@ -10,7 +10,7 @@ No sign-up needed. Your data is saved privately in your own browser. Sign in wit
 
 - **Daily to-do list.** Add tasks for any day, with optional planned minutes and a priority. Tick them off, skip them, duplicate them or delete them.
 - **Priorities.** Every task and side quest is either **High** or **Low** priority. High-priority items are listed first, with a divider before the low-priority ones. Click a priority chip to switch it.
-- **Side quests.** Keep a list of hobbies, little projects and things you want to try, each with its own priority. Press **+** on a side quest to add it to the selected day's plan.
+- **Side quests.** Keep a list of hobbies, little projects and things you want to try, each with its own priority. Press **+** on a side quest to add it to the selected day's plan. Tick a side quest's box to mark it done for that day, just like a to-do. It then counts toward the day's progress, the review, the activity graph and your personal bests.
 - **Day review.** See what you finished and what you didn't for any day. On past days, unfinished tasks are marked as missed, and one click moves them to today.
 - **Notes.** Write notes for each day.
 - **Activity graph.** A GitHub-style grid of the last year. The brighter a square, the more tasks you finished that day. Click a square to open that day.
@@ -95,6 +95,12 @@ and open **http://localhost:8000** in your browser.
 > Note: the localhost link only works on the computer running the command. To share the planner, use the [live link](https://aditya-7826.github.io/Plan-it-out/) above.
 
 ## Changelog
+
+### v2.6: Tick off side quests (November 2026)
+
+- Side quests now have a tick box, like the to-do list. Ticking one marks it done for the selected day, crosses it out, and adds it to the day's progress, Done list, activity graph and personal bests.
+- Unticking removes it from that day again. If you had planned it with **+**, it goes back to "to do" instead.
+- Ticking the same item in the to-do list also ticks the side quest, and the other way round. Ticks sync between devices like everything else.
 
 ### v2.5: Sync between laptop and phone (November 2026)
 
